@@ -1,0 +1,292 @@
+<div class="main" ng-cloak>
+    <div ng-include="'views/sideMenu.html'"></div>
+    <div id="main-content" ng-init="getDashBoardsDetails()">
+        <div class="header-wrapper">
+            <header class="clearfix">
+                <nav class="navbar navbar-fixed-top">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- Collect the nav links, forms, and other content for toggling -->
+                            <div class="col-xs-7 col-sm-10 col-md-9 col-lg-10" id="">
+                                <ul class="cus-breadcrumb visible-md-block visible-lg-block reset pull-left">
+                                    <li class="sidenav" ng-click="hideSidebar();callSCrollBar()">
+                                        <a href=""><i class="fa fa-bars" aria-hidden="true"></i></a>
+                                    </li>
+                                    <li class="">Dashboard</li>
+                                </ul>
+                                <ul class="hidden-md hidden-lg pull-left reset">
+                                    <li><a ng-click=""><i class="fa fa-bars" ng-click="sidebarMobileView()"></i></a></li>
+
+                                </ul>
+                            </div>
+                            <!-- /.navbar-collapse -->
+                            <div ng-include="'views/headerMenu.html'"></div>
+                        </div>
+                    </div>
+                    <!-- /.container-fluid -->
+                </nav>
+            </header>
+        </div>
+        <!-- .header-wrapper End -->
+
+        <div class="page-contents dashb">
+            <div class="container-fluid">
+                <div class="list-view">
+                    <div class="row hidden-md hidden-lg mob-heads">
+                        <div class="col-xs-9 col-sm-8">
+                            <h3>Dashboard</h3>
+                        </div>
+
+                    </div>
+                    <div class="row" ng-show="role == '1' || role == '2'">
+                        <div class="col-lg-12 filter-container finline">
+                            <label ng-click="showFilter =! showFilter"><i class="fa" ng-class="{'fa-chevron-down': !showFilter, 'fa-chevron-up': showFilter}"></i> Filter</label>
+                            <div class="filter-fields form-inline" ng-show="showFilter">
+                                <div class="row mar-10-0">
+                                    <div class="col-sm-3 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label for="form_user">Builder</label>
+                                            <select class="form-control" id="form_user" name="dashboard" ng-model="builderNames" ng-options="builders.Id as builders.Value for builders in builderList">
+                                                <option value>-- Select Builder--</option>
+
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 col-md-4 col-lg-4">
+                                        <div class="form-group">
+                                            <label for="form_user">% of Completion</label>
+                                            <select class="form-control" id="form_user" name="percentage" ng-model="percentage" ng-options="percent.Value as percent.Value for percent in percentages">
+                                                <option value>-- Select Percentage --</option>
+
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 btn-align">
+                                        <button type="button" class="btn btn-default mar-5" ng-click="resetFilterValues()">Reset</button>
+                                        <button type="button" class="pri-cus-buttons mar-5" ng-click="getDashBoardsDetails(0)">Apply</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- end of .filter-container -->
+
+                <div class="row">
+                    <div class="col-sm-12 col-md-12 col-lg-12">
+
+                        <!--------------------->
+
+                        <div class="cus-scroll-container" scrolly ng-class="{tfixed:boolChangeClass}" ng-style="{width:tableWidth}">
+                            <table class="table table-bordered" id="permits_jq_demo">
+                                <thead>
+                                    <tr>
+                                        <th ng-click="sortBy('ContactName');sortReverse = !sortReverse">Contact <i class="fa fa-sort"></i></th>
+                                        <th ng-click="sortBy('County');sortReverse = !sortReverse">County <i class="fa fa-sort"></i></th>
+                                        <th>Date Received</th>
+                                        <th>Lot #</th>
+                                        <th ng-click="sortBy('Community');sortReverse = !sortReverse">Community <i class="fa fa-sort"></i></th>
+                                        <th>Model / Elev</th>
+                                        <th>7 Business Day Metric</th>
+                                        <th>Delivery to Client</th>
+                                        <th>Notes </th>
+                                        <th>Client Feedback</th>
+                                        <th>% of Completion</th>
+                                        <th>Option</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+
+                        <!-------------------->
+
+                        <div class="table-responsive cus-cards" style=" overflow-y: hidden;overflow-x:hidden;">
+                            <table wt-responsive-table class="table table-bordered responsive">
+                                <thead style="visibility: hidden;">
+                                    <tr>
+                                        <th ng-click="sortBy('ContactName');sortReverse = !sortReverse">Contact <i class="fa fa-sort"></i></th>
+                                        <th ng-click="sortBy('County');sortReverse = !sortReverse">County <i class="fa fa-sort"></i></th>
+                                        <th>Date Received</th>
+                                        <th>Lot #</th>
+                                        <th ng-click="sortBy('Community');sortReverse = !sortReverse">Community <i class="fa fa-sort"></i></th>
+                                        <th>Model / Elev</th>
+                                        <th>7 Business Day Metric</th>
+                                        <th>Delivery to Client</th>
+                                        <th>Notes </th>
+                                        <th>Client Feedback</th>
+                                        <th>% of Completion</th>
+                                        <th>Option</th>
+                                    </tr>
+                                </thead>
+                                <!--<tbody ng-repeat="dashBoardDatas in dashBoardList | orderBy:orderField |limitTo: itemsPerPage">-->
+                                    <!--<tbody ng-repeat="dashBoardDatas in dashBoardList">-->
+                                    <tbody>
+                                        <tr ng-class="(dashBoardDatas.ColorCode == 'red')?'red font-color':(dashBoardDatas.ColorCode == 'lightGreen'|| dashBoardDatas.ColorCode == 'limeGreen'|| dashBoardDatas.ColorCode == 'green')?'green font-color':(dashBoardDatas.ColorCode == 'orange')?'orange font-color':(dashBoardDatas.ColorCode == 'purple')?'purple font-color':''" ng-repeat="dashBoardDatas in dashBoardList | orderBy:orderField |limitTo: itemsPerPage">
+                                            <td>{{dashBoardDatas.ContactName}}</td>
+                                            <td>{{dashBoardDatas.County | lowercase}}</td>
+                                            <td>{{dashBoardDatas.DateReceived | date:shortDate}}</td>
+                                            <td>{{dashBoardDatas.LotNumber | lowercase}}</td>
+                                            <td>{{dashBoardDatas.Community | lowercase}}</td>
+                                            <td>{{dashBoardDatas.Model | lowercase}}</td>
+                                            <td>{{dashBoardDatas.BusinessDayMetric}}</td>
+                                            <td>{{dashBoardDatas.DeliveryToClient}}</td>
+                                            <td>{{dashBoardDatas.Notes}}</td>
+                                            <td>{{dashBoardDatas.PendingInfoFromClient}}</td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div class="progress-bar" role="progressbar" aria-valuenow="{{dashBoardDatas.Percentage}}" aria-valuemin="0" aria-valuemax="100" ng-style="{width:dashBoardDatas.Percentage}">
+                                                        {{dashBoardDatas.Percentage}}%
+                                                    </div>
+                                                </div>
+                                               
+                                            </td>
+                                            <td>
+                                                <i class="fa fa-files-o" aria-hidden="true" data-toggle="modal" data-target="#myModal" ng-click="getAllFilesList(dashBoardDatas.PermitId)"></i>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot ng-if="dashBoardList.length == 0">
+                                        <tr>
+                                            <td colspan="10">
+                                                <center>No activity is recorded, please choose different filter option</center>
+                                            </td>
+
+                                        </tr>
+                                    </tfoot>
+                            </table>
+                            <!-- end of .filter-container -->
+
+                        </div>
+                    </div>
+                    <!-- end of content -->
+
+                    <div class="row" ng-if="dashBoardList.length > 0" ng-hide="pageCount() == 1">
+                        <div class="col-sm-12 col-md-12 col-lg-12 ">
+                            <div class="clearfix mar-15-7">
+                                <div class="pull-left">
+                                    <ul class="cus-pagination reset">
+                                        <li class="" ng-class="{current:currentPage == n}" ng-repeat="n in range()" ng-click="setPage(n)">{{n}}</li>
+                                    </ul>
+                                </div>
+                                <div class="pull-right">
+                                    <nav>
+                                        <ul class="cus-pagination-pager reset">
+                                            <!--<li class="disabled" ng-class="">-->
+                                            <li class="disabled" ng-if="currentPage == 1">
+                                                <button class="btn-disabled">
+                                                    <i class="fa fa-angle-double-left"></i> Previous</button>
+                                            </li>
+                                            <li class="" ng-if="currentPage > 1">
+                                                <button class="pri-cus-buttons" ng-click="prevPage()">
+                                                    <i class="fa fa-angle-double-left"></i> Previous</button>
+                                            </li>
+                                            <li class="disabled" ng-if="currentPage == pageCount()">
+                                                <button class="btn-disabled">Next <i class="fa fa-angle-double-right"></i></button>
+                                            </li>
+                                            <li class="" ng-if="currentPage < pageCount()">
+                                                <button class="pri-cus-buttons" ng-click="nextPage()">Next <i class="fa fa-angle-double-right"></i></button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end of .pagination -->
+
+                </div>
+
+            </div>
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title">Document uploaded list for Permit-26017.009</h4>
+                        </div>
+                        <div class="">
+                            <div class="mar-10 pad-7">
+                                <label class="pri-cus-buttons pull-left mar-0-5">
+                                    <i class="fa fa-plus" aria-hidden="true"></i>
+                                    <span>Add file</span>
+                                    <input type="file" id="fileID" file-model="myFile" style="visibility: hidden;" ng-disabled="multipleFiles.length == 5">
+                                </label>
+                                <span class="mar-10">{{fileName}}</span>
+
+                                <button class="pri-cus-buttons pull-right mar-0-5" ng-click="uploadFile(currentPermitId)" ng-if="multipleFiles.length >0">Upload</button>
+                                <button class="pri-cus-buttons pull-right mar-0-5" ng-click="cancelFileUpload('deleteAll')" ng-if="multipleFiles.length >0">Cancel</button>
+                            </div>
+
+                            <!--<ul class="list-group" ng-if="multipleFiles.length > 0">-->
+                            <ul class="list-group">
+
+                                <li class="list-group-item" ng-if="multipleFiles.length > 0" ng-repeat="fileDetails in multipleFiles">
+                                    <i class="fa fa-upload" aria-hidden="true">
+                                    <span class="mar-10">{{fileDetails.name}}</span>
+                                        
+                                    <span ng-switch="fileDetails.size > 1024*1024">
+                                    <span ng-switch-when="true">{{fileDetails.size / 1024 / 1024 | number:2}} MB</span>
+                                    <span ng-switch-default>{{fileDetails.size / 1024 | number:2}} kB</span>
+                                    </span>    
+
+                                    </i>
+                                    <i class="fa fa-times" aria-hidden="true" ng-click="cancelFileUpload($index)"></i>
+                                </li>
+                                <li class="list-group-item" ng-repeat="files in listOfFiles">
+                                    <a ng-href="{{baseUrl}}/{{files.FileLocation}}" target="_blank">
+                                        <i class="fa fa-download" aria-hidden="true"></i>
+                                        <span>{{files.FileName}}</span>
+                                    </a>
+                                </li>
+                                <li class="list-group-item" ng-if="listOfFiles.length === 0">
+                                    <span>No files to download</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    #permits_jq_demo tr.new input {
+        min-width: 100px;
+    }
+    
+    tr.new td.buttons {
+        min-width: 164px;
+    }
+    
+    #fileID {
+        display: inline-block !important;
+        width: 5px;
+    }
+    
+    .modal .list-group-item {
+        cursor: pointer;
+    }
+    
+    /*********/
+    
+    .cus-scroll-container {
+        height: 60px;
+        overflow-x: scroll;
+        overflow-y: hidden;
+        background: #fff;
+        top: 55px;
+        z-index: 2;
+    }
+    
+    .scroll {
+        height: 18px;
+    }
+    
+    .tfixed {
+        position: fixed;
+    }
+    /**********/
+    
+</style>

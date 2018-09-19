@@ -1,0 +1,636 @@
+<div class="main permit" ng-cloak>
+    <div ng-include="'views/sideMenu.html'"></div>
+    <div id="main-content" ng-init="getAllDefaultPermits()">
+        <div class="header-wrapper">
+            <header class="clearfix">
+                <nav class="navbar navbar-fixed-top">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- Collect the nav links, forms, and other content for toggling -->
+                            <div class="col-xs-7 col-sm-10 col-md-9 col-lg-10" id="">
+                                <ul class="cus-breadcrumb visible-md-block visible-lg-block reset pull-left">
+                                    <li class="sidenav" ng-click="hideSidebar();callSCrollBar()">
+                                        <a href=""><i class="fa fa-bars" aria-hidden="true"></i></a>
+                                    </li>
+                                    <li class="">Permits</li>
+
+
+                                </ul>
+                                <ul class="hidden-md hidden-lg pull-left reset">
+                                    <li><a ng-click=""><i class="fa fa-bars" ng-click="sidebarMobileView()"></i></a></li>
+
+                                </ul>
+                                <div class="" ng-if="loggedUserRole == 1 || loggedUserRole == 2" ng-hide="newEntry || editMode">
+                                    <button class="pri-cus-buttons pull-right hidden-sm hidden-xs" id="new" ng-click="createNewPermit()" ng-disabled="!dataLoadingSpinner">New Permit Request</button>
+                                    <button class="pri-cus-buttons pull-right hidden-sm hidden-xs mar-0-5" id="edit" ng-click="editTables()" ng-hide="allPermitsList.length == 0">Edit</button>
+                                </div>
+                                <div class="" ng-if="loggedUserRole == 1 || loggedUserRole == 2" ng-show="editMode || newEntry">
+                                    <button class="pri-cus-buttons pull-right hidden-sm hidden-xs mar-0-5" id="hsave" ng-click="saveChanges();" ng-disabled="enableSaveButton">Save</button>
+                                    <button class="pri-cus-buttons pull-right hidden-sm hidden-xs" id="hcancel" ng-click="cancelEdit()">Cancel</button>
+                                </div>
+                            </div>
+                            <!-- /.navbar-collapse -->
+                            <div ng-include="'views/headerMenu.html'"></div>
+                        </div>
+                    </div>
+                    <!-- /.container-fluid -->
+                </nav>
+            </header>
+        </div>
+        <!-- .header-wrapper End -->
+
+        <div class="page-contents">
+            <div class="container-fluid">
+                <div class="list-view">
+                    <div class="row hidden-md hidden-lg mob-heads" ng-if="role == 1 || role == 2">
+                        <div class="col-xs-6 col-sm-7">
+                            <h3>Permits</h3>
+                        </div>
+                        <div class="col-xs-6 col-sm-5 text-right">
+                            <div class="" ng-if="loggedUserRole == 1 || loggedUserRole == 2" ng-hide="newEntry || editMode">
+                                <button class="pri-cus-buttons pull-right" id="new" ng-click="createNewPermit()">
+                                    <i class="fa fa-plus"></i> New Permit Request</button>
+                                <button class="pri-cus-buttons pull-right mar-0-5" id="edit" ng-click="editTables()" ng-hide="allPermitsList.length == 0">
+                                    <i class="fa fa-pencil-square-o"></i> Edit</button>
+                            </div>
+                            <div class="" ng-if="loggedUserRole == 1 || loggedUserRole == 2" ng-show="editMode || newEntry">
+                                <button class="pri-cus-buttons" id="hsave" ng-click="saveChanges();enableSaveButton = true" ng-disabled="enableSaveButton"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</button>
+                                <button class="pri-cus-buttons" id="hcancel" ng-click="cancelEdit()"><i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" ng-hide="loggedUserRole == 3">
+                        <div class="col-lg-12 filter-container finline">
+                            <label ng-click="showFilter = !showFilter">
+                                <i class="fa" ng-class="{'fa-chevron-down': !showFilter, 'fa-chevron-up': showFilter}"></i> Filter
+                            </label>
+                            <div class="filter-fields form-inline" ng-show="showFilter">
+                                <div class="row mar-10-0">
+                                    <div class="col-sm-3 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label for="form_user">Builder</label>
+                                            <select class="form-control" id="form_user" ng-options="builders.Id as builders.Value for builders in buildersList" ng-model="builderId" ng-change="getUserByBuilderId()"></select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label for="form_user">User</label>
+                                            <select class="form-control" id="form_user" ng-options="users.Id as users.Value for users in userList" ng-model="userId" ng-disabled="enableUserList"></select>&nbsp;<i class="fa fa-spinner fa-spin" ng-show="startSpinner"></i>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-sm-12 col-md-12 btn-align">
+                                        <button type="button" class="btn btn-default mar-5" ng-click="resetFieldData()">Reset</button>
+                                        <button type="button" class="pri-cus-buttons mar-5" ng-click="filterPermitsByParams(0)">Apply</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end of .filter-container -->
+                    <div class="row">
+                        <div class="col-sm-12 col-md-12 col-lg-12">
+                            <!--<div class="row">
+                                <div class="col-sm-12 col-md-12 col-lg-12">-->
+
+                            <!-------------------------------->
+
+                            <div class="cus-scroll-container" scrolly ng-class="{tfixed:boolChangeClass}" ng-style="{width:tableWidth}">
+                                <table class="table table-bordered" id="permits_jq_demo">
+                                    <thead>
+                                        <tr>
+                                            <th ng-if="newEntry">Builder<span class="required" ng-show="newEntry">*</span><i class="fa fa-sort"></i></th>
+                                            <th ng-if="newEntry && loggedUserRole==1">Builder contact<i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('JobNumber');sortReverse = !sortReverse">DBDG job <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('ContractReview');sortReverse = !sortReverse">Contract review <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('DBDG_in_date');sortReverse = !sortReverse" class="table-cell">DBDG in<span class="required" ng-show="newEntry">*</span><i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('ContactName');sortReverse = !sortReverse">Contact <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('OrderTypeName');sortReverse = !sortReverse">Order type <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('MunicipalityName');sortReverse = !sortReverse">Municipality <i class="fa fa-sort"></i></th>
+                                            <th class="table-cell" ng-click="sortBy('LotNumber');sortReverse = !sortReverse">Lot # <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('CommunityName');sortReverse = !sortReverse">Community <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('ModelName');sortReverse = !sortReverse">Model / Elevation / Hand <i class="fa fa-sort" ng-click="sortBy('ModelName');sortReverse = !sortReverse"></i></th>
+                                            <th ng-click="sortBy('PDF_StatusName');sortReverse = !sortReverse">PDF status <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('QaPerson');sortReverse = !sortReverse">QA person <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('SiteOrddate');sortReverse = !sortReverse" class="table-cell">Site ord <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('SiteRcvdDate');sortReverse = !sortReverse" class="table-cell">Site rcvd <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('EcalcsOrddate');sortReverse = !sortReverse" class="table-cell">Ecalcs ord <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('EcalcsRcvddate');sortReverse = !sortReverse" class="table-cell">Ecalcs rcvd <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('TrussOrddate');sortReverse = !sortReverse">Truss ord <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('ElectronicTrussesRecDate');sortReverse = !sortReverse">Electronic trusses rec'd <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('PlanSentToEngineerDate');sortReverse = !sortReverse">Plans sent to engineer <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('HardCopyTrussPkgRecDate');sortReverse = !sortReverse">Hard copy truss pkg rec'd <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('TrussLetterRecDate');sortReverse = !sortReverse">Truss letter rec'd <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('PrintsOrderedDate');sortReverse = !sortReverse">Prints ordered <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('SqftToClient');sortReverse = !sortReverse">Sq. ft to client <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('PostedToBuzzsawDropbox');sortReverse = !sortReverse">Posted to buzzsaw/dropbox <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('BusinessDayMetric');sortReverse = !sortReverse">Business day metric <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('DeliveryToClient');sortReverse = !sortReverse">Delivery to client <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('BusinessDays');sortReverse = !sortReverse">Business days <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('DaysPast');sortReverse = !sortReverse">Number of days past <i class="fa fa-sort"></i></th>
+                                            <th style="min-width:300px;" ng-click="sortBy('Notes');sortReverse = !sortReverse">Notes <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('NotesCompleted');sortReverse = !sortReverse">Notes completed<i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('ClientFeedback');sortReverse = !sortReverse">Client feedback<i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('BilledDate');sortReverse = !sortReverse" class="table-cell">Billed <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('Days');sortReverse = !sortReverse" class="table-cell">Days <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('CompletedOrInvoiced');sortReverse = !sortReverse">Completed/Invoiced<i class="fa fa-sort"></i></th>
+                                            <th>% of completion</th>
+                                            <th style="min-width:136px;">Options</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+
+                            <!------------------------------->
+
+                            <div class="table-responsive cus-cards" style=" overflow-y: hidden;overflow-x:hidden;">
+                                <!-- <div class="table-responsive cus-cards">-->
+                                <!--<table class="table table-striped" id="permits_jq_demo">-->
+                                <table class="table table-bordered" id="permits_jq_demo">
+                                    <thead style="visibility: hidden;">
+                                        <tr>
+                                            <th ng-if="newEntry">Builder<span class="required" ng-show="newEntry">*</span><i class="fa fa-sort"></i></th>
+                                            <th ng-if="newEntry && loggedUserRole==1">Builder contact<i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('JobNumber');sortReverse = !sortReverse">DBDG job <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('ContractReview');sortReverse = !sortReverse">Contract review <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('DBDG_in_date');sortReverse = !sortReverse" class="table-cell">DBDG in<span class="required" ng-show="newEntry">*</span><i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('ContactName');sortReverse = !sortReverse">Contact <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('OrderTypeName');sortReverse = !sortReverse">Order type <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('MunicipalityName');sortReverse = !sortReverse">Municipality <i class="fa fa-sort"></i></th>
+                                            <th class="table-cell" ng-click="sortBy('LotNumber');sortReverse = !sortReverse">Lot # <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('CommunityName');sortReverse = !sortReverse">Community <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('ModelName');sortReverse = !sortReverse">Model / Elevation / Hand <i class="fa fa-sort" ng-click="sortBy('ModelName');sortReverse = !sortReverse"></i></th>
+                                            <th ng-click="sortBy('PDF_StatusName');sortReverse = !sortReverse">PDF status <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('QaPerson');sortReverse = !sortReverse">QA Person <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('SiteOrddate');sortReverse = !sortReverse" class="table-cell">Site ord <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('SiteRcvdDate');sortReverse = !sortReverse" class="table-cell">Site rcvd <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('EcalcsOrddate');sortReverse = !sortReverse" class="table-cell">Ecalcs ord <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('EcalcsRcvddate');sortReverse = !sortReverse" class="table-cell">Ecalcs rcvd <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('TrussOrddate');sortReverse = !sortReverse">Truss ord <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('ElectronicTrussesRecDate');sortReverse = !sortReverse">Electronic trusses rec'd <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('PlanSentToEngineerDate');sortReverse = !sortReverse">Plans sent to engineer <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('HardCopyTrussPkgRecDate');sortReverse = !sortReverse">Hard copy truss pkg rec'd <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('TrussLetterRecDate');sortReverse = !sortReverse">Truss letter rec'd <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('PrintsOrderedDate');sortReverse = !sortReverse">Prints ordered <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('SqftToClient');sortReverse = !sortReverse">Sq. ft to client <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('PostedToBuzzsawDropbox');sortReverse = !sortReverse">Posted to buzzsaw/dropbox <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('BusinessDayMetric');sortReverse = !sortReverse">Business day metric <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('DeliveryToClient');sortReverse = !sortReverse">Delivery to client <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('BusinessDays');sortReverse = !sortReverse">Business days <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('DaysPast');sortReverse = !sortReverse">Number of days past <i class="fa fa-sort"></i></th>
+                                            <th style="min-width:300px;" ng-click="sortBy('Notes');sortReverse = !sortReverse">Notes <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('NotesCompleted');sortReverse = !sortReverse">Notes completed<i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('ClientFeedback');sortReverse = !sortReverse">Client feedback<i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('BilledDate');sortReverse = !sortReverse" class="table-cell">Billed <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('Days');sortReverse = !sortReverse" class="table-cell">Days <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('CompletedOrInvoiced');sortReverse = !sortReverse">Completed/Invoiced<i class="fa fa-sort"></i></th>
+                                            <th>% of completion</th>
+                                            <th style="min-width:136px;">Options</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!--<img src="../images/spinner.gif" class"loading" />-->
+                                        <div class="loading" ng-hide="dataLoadingSpinner">Loading&#8230;</div>
+                                        <tr ng-class="{'datepicker-last':$index==6||$index==7||$index==8||$index==9}" data-ng-repeat="permits in allPermitsList">
+                                            <!-- this field only for new entry-->
+                                            <td ng-show="permits.newInsert">
+                                                <select class="form-control" ng-options="builds.Id as builds.Value for builds in buildersList" ng-model="permits.BuilderId" ng-change="changesInGrid($index);getBuilderContactList(permits.BuilderId)" ng-style="(permits.BuilderId)?'' :{'border-color':'red'}"></select>
+                                            </td>
+
+                                            <td ng-show="permits.newInsert && loggedUserRole == 1">
+                                                <select class="form-control" ng-options="contact.Id as contact.Value for contact in builderContactList" ng-model="permits.BuilderContactId" ng-change="changesInGrid($index)" multiple>
+                                                    <option value>-- Select --</option>
+                                                </select>
+                                            </td>
+                                            <td ng-show="newEntry && !permits.newInsert"><span></span></td>
+                                            <td ng-show="newEntry && !permits.newInsert"><span></span></td>
+
+                                            <!-- ends-->
+
+
+                                            <td class={{permits.fieldColor||permits.pdfFieldColor}} ng-init="checkFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.JobNumber}}</span>
+                                                <input type="text" class="form-control" ng-show="editMode || permits.newInsert" ng-model="permits.JobNumber" ng-change="changesInGrid($index)">
+                                            </td>
+
+
+                                            <td class={{permits.fieldColor||permits.pdfFieldColor}} ng-init="checkFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.ContractReview}}</span>
+                                                <input type="text" class="form-control" ng-show="editMode || permits.newInsert" ng-model="permits.ContractReview" ng-change="changesInGrid($index)" />
+                                            </td>
+
+                                            <td class={{permits.fieldColor||permits.pdfFieldColor}} ng-init="checkFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.DBDG_in_date}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="mm/dd/yyyy" ng-model="permits.DBDG_in_date" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-style="filedMissing && !permits.DBDG_in_date ? {'border-color':'red'} :''" ng-show="editMode || permits.newInsert" />
+                                                </datepicker>
+                                            </td>
+
+                                            <td class={{permits.fieldColor||permits.pdfFieldColor}} ng-init="checkFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.ContactName}}</span>
+                                                <input type="text" class="form-control" ng-show="editMode || permits.newInsert" ng-model="permits.ContactName" ng-change="changesInGrid($index)" />
+                                            </td>
+
+                                            <td class={{permits.fieldColor||permits.pdfFieldColor}} ng-init="checkFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.OrderTypeName}}</span>
+                                                <select class="form-control" ng-options="orders.Id as orders.Value for orders in orderTypeList" ng-model="permits.OrderTypeId" ng-show="editMode || permits.newInsert" ng-change="changesInGrid($index)">
+                                                    <option value>-- Select --</option>
+                                                </select>
+                                            </td>
+
+
+                                            <td class={{permits.fieldColor||permits.pdfFieldColor}} ng-init="checkFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.MunicipalityName | lowercase}}</span>
+                                                <select class="form-control" ng-options="municips.Id as municips.Value for municips in municipalityList" ng-model="permits.MunicipalityId" ng-show="editMode || permits.newInsert" ng-change="changesInGrid($index)">
+                                                    <option value>-- Select --</option>
+                                                </select>
+                                            </td>
+
+
+                                            <td class={{permits.fieldColor||permits.pdfFieldColor}} ng-init="checkFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.LotNumber}}</span>
+                                                <input type="text" class="form-control" ng-show="editMode || permits.newInsert" ng-model="permits.LotNumber" ng-change="changesInGrid($index)" />
+                                            </td>
+
+
+                                            <td class={{permits.fieldColor||permits.pdfFieldColor}} ng-init="checkFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.CommunityName | lowercase}}</span>
+                                                <select class="form-control" ng-options="community.Id as community.Value for community in communityList" ng-model="permits.CommunityId" ng-show="editMode || permits.newInsert" ng-change="changesInGrid($index)">
+                                                    <option value>-- Select --</option>
+                                                </select>
+                                            </td>
+
+
+                                            <td class={{permits.fieldColor||permits.pdfFieldColor}} ng-init="checkFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.ModelName | lowercase}}</span>
+                                                <select class="form-control" ng-options="models.Id as models.Value for models in modelList" ng-model="permits.ModelId" ng-show="editMode || permits.newInsert" ng-change="changesInGrid($index)">
+                                                    <option value>-- Select --</option>
+                                                </select>
+                                            </td>
+
+
+                                            <td class={{permits.fieldColor||permits.pdfFieldColor}} ng-init="checkFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.PDF_StatusName}}</span>
+                                                <select class="form-control" ng-options="pdfStatus.Id as pdfStatus.Value for pdfStatus in PdfStatusList" ng-model="permits.PDF_StatusId" ng-show="editMode || permits.newInsert" ng-change="changesInGrid($index)">
+                                                    <option value>-- Select --</option>
+                                                </select>
+                                            </td>
+
+
+                                            <td class={{permits.fieldColor||permits.pdfFieldColor}} ng-init="checkFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.QaPerson}}</span>
+                                                <input type="text" class="form-control" ng-show="editMode || permits.newInsert" ng-model="permits.QaPerson" ng-change="changesInGrid($index)" />
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.SiteOrddate}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.SiteOrddate" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" />
+                                                </datepicker>
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.SiteRcvdDate}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.SiteRcvdDate" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" />
+                                                </datepicker>
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{(permits.OrderTypeId == 4)?  permits.EcalcsOrddate : (permits.OrderTypeId == 5) ? permits.EcalcsOrddate = 'N/A' : permits.EcalcsOrddate}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.EcalcsOrddate" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" ng-disabled="permits.OrderTypeId == 5 && checkFieldStatus($index)" />
+                                                </datepicker>
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{(permits.OrderTypeId == 4)?  permits.EcalcsRcvddate : (permits.OrderTypeId == 5)? permits.EcalcsRcvddate = 'N/A' : permits.EcalcsRcvddate}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.EcalcsRcvddate" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" ng-disabled="permits.OrderTypeId == 5 && checkFieldStatus($index)" />
+                                                </datepicker>
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <!--<span ng-hide="editMode || permits.newInsert">
+                                                            {{(permits.OrderTypeId == 4)?  permits.TrussOrddate = '' : (permits.OrderTypeId == 5) ? permits.TrussOrddate = 'N/A' : permits.TrussOrddate = ''}}
+                                                            </span>-->
+                                                <span ng-hide="editMode || permits.newInsert">{{(permits.MunicipalityId == 6 || permits.MunicipalityId == 7 || permits.MunicipalityId == 8)? permits.TrussOrddate = 'N/A' : (permits.OrderTypeId == 4)? permits.TrussOrddate : (permits.OrderTypeId == 5) ? permits.TrussOrddate = 'N/A' : permits.TrussOrddate}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.TrussOrddate" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" ng-disabled="checkFieldStatus($index)" />
+                                                </datepicker>
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+
+                                                <span ng-hide="editMode || permits.newInsert">{{(permits.MunicipalityId == 6 || permits.MunicipalityId == 7 || permits.MunicipalityId == 8)? permits.ElectronicTrussesRecDate = 'N/A' : (permits.OrderTypeId == 4)? permits.ElectronicTrussesRecDate : (permits.OrderTypeId == 5) ? permits.ElectronicTrussesRecDate = 'N/A' : permits.ElectronicTrussesRecDate}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.ElectronicTrussesRecDate" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" ng-disabled="checkFieldStatus($index)" />
+                                                </datepicker>
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{(permits.MunicipalityId == 6 || permits.MunicipalityId == 7 || permits.MunicipalityId == 8)? permits.PlanSentToEngineerDate = 'N/A' : (permits.OrderTypeId == 4)? permits.PlanSentToEngineerDate : (permits.OrderTypeId == 5) ? permits.PlanSentToEngineerDate = 'N/A' : permits.PlanSentToEngineerDate}}</span>
+
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.PlanSentToEngineerDate" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" ng-disabled="checkFieldStatus($index)" />
+                                                </datepicker>
+                                            </td>
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+
+                                                <span ng-hide="editMode || permits.newInsert">{{(permits.MunicipalityId == 6 || permits.MunicipalityId == 7 || permits.MunicipalityId == 8)? permits.HardCopyTrussPkgRecDate = 'N/A' : (permits.OrderTypeId == 4)? permits.HardCopyTrussPkgRecDate : (permits.OrderTypeId == 5) ? permits.HardCopyTrussPkgRecDate = 'N/A' : permits.HardCopyTrussPkgRecDate}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.HardCopyTrussPkgRecDate" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" ng-disabled="checkFieldStatus($index)" />
+                                                </datepicker>
+                                            </td>
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+
+                                                <span ng-hide="editMode || permits.newInsert">{{(permits.MunicipalityId == 6 || permits.MunicipalityId == 7 || permits.MunicipalityId == 8)? permits.TrussLetterRecDate = 'N/A' : (permits.OrderTypeId == 4)? permits.TrussLetterRecDate : (permits.OrderTypeId == 5) ? permits.TrussLetterRecDate = 'N/A' : permits.TrussLetterRecDate}}</span>
+
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.TrussLetterRecDate" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" ng-disabled="checkFieldStatus($index)" />
+                                                </datepicker>
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.PrintsOrderedDate}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.PrintsOrderedDate" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" />
+                                                </datepicker>
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.SqftToClient}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.SqftToClient" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" />
+                                                </datepicker>
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.PostedToBuzzsawDropbox}}</span>
+                                                <input type="text" ng-show="editMode || permits.newInsert" ng-model="permits.PostedToBuzzsawDropbox" class="form-control" ng-change="changesInGrid($index)" />
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.BusinessDayMetric}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.BusinessDayMetric" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" ng-disabled="true" />
+                                                </datepicker>
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.DeliveryToClient}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.DeliveryToClient" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" />
+                                                </datepicker>
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.BusinessDays}}</span>
+                                                <input type="number" min="0" class="form-control" ng-show="editMode || permits.newInsert" ng-model="permits.BusinessDays" ng-change="changesInGrid($index)" readonly />
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.DaysPast}}</span>
+                                                <input type="text" class="form-control" ng-show="editMode || permits.newInsert" ng-model="permits.DaysPast" ng-change="changesInGrid($index)" readonly />
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.Notes}}</span>
+                                                <input type="text" class="form-control" ng-show="editMode || permits.newInsert" ng-model="permits.Notes" ng-change="changesInGrid($index)" />
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+
+                                                <span ng-switch="permits.NotesCompleted" ng-hide="editMode || permits.newInsert">
+                                                            <span ng-switch-when="0">No</span>
+                                                <span ng-switch-when="1">Yes</span>
+                                                <span ng-switch-default>No</span>
+                                                </span>
+
+                                                <input type="checkbox" aria-checked="false" aria-invalid="false" ng-model="permits.NotesCompleted" ng-true-value="1" ng-false-value="0" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert">
+
+
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+
+                                                <span ng-switch="permits.ClientFeedback" ng-hide="editMode || permits.newInsert">
+                                                            <span ng-switch-when="0">No</span>
+                                                <span ng-switch-when="1">Yes</span>
+                                                <span ng-switch-default>No</span>
+                                                </span>
+
+
+                                                <input type="checkbox" aria-checked="false" aria-invalid="false" ng-model="permits.ClientFeedback" ng-true-value="1" ng-false-value="0" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert">
+
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.BilledDate}}</span>
+                                                <datepicker date-format="MM/dd/yyyy" selector="form-control">
+                                                    <input class="form-control" placeholder="" ng-model="permits.BilledDate" ng-click="datePickerPos($event)" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert" />
+                                                </datepicker>
+
+                                            </td>
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <span ng-hide="editMode || permits.newInsert">{{permits.Days}}</span>
+                                                <input type="number" min="0" class="form-control" ng-show="editMode || permits.newInsert" ng-model="permits.Days" ng-change="changesInGrid($index)" />
+                                            </td>
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+
+                                                <span ng-switch="permits.CompletedOrInvoiced" ng-hide="editMode || permits.newInsert">
+                                                            <span ng-switch-when="0">No</span>
+                                                <span ng-switch-when="1">Yes</span>
+                                                <span ng-switch-default>No</span>
+                                                </span>
+
+                                                <input type="checkbox" aria-checked="false" aria-invalid="false" ng-model="permits.CompletedOrInvoiced" ng-true-value="1" ng-false-value="0" ng-change="changesInGrid($index)" ng-show="editMode || permits.newInsert">
+
+                                            </td>
+
+
+                                            <td class={{permits.particularFieldColor}} ng-init="checkParticularFieldColor($index)">
+                                                <div class="progress">
+                                                    <div class="progress-bar" role="progressbar" aria-valuenow="{{permits.PercentageOfComplition}}" aria-valuemin="0" aria-valuemax="100" ng-style="{width:permits.PercentageOfComplition}">
+                                                        {{permits.PercentageOfComplition}}%
+                                                    </div>
+                                                </div>
+                                            </td>
+
+
+                                            <td ng-hide="permits.newInsert">
+                                                <i class="fa fa-files-o" aria-hidden="true" data-toggle="modal" data-target="#myModal" ng-click="getAllFilesList(permits.PermitId)" tooltip></i>
+                                                <i ng-hide="editMode" class="fa fa-trash-o" aria-hidden="true" data-toggle="tooltip" data-placement="top" title="Delete" ng-click="deleteFieldFromFGrid($index,permits.PermitId)" ng-if="loggedUserRole == 1 || loggedUserRole == 2" tooltip></i>
+                                            </td>
+
+                                        </tr>
+                                    </tbody>
+                                    <tfoot ng-show="allPermitsList.length == 0">
+                                        <tr>
+                                            <td colspan="9">
+                                                <center>No matches found !</center>
+                                            </td>
+
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!-- end of content -->
+                    <div class="row" ng-if="allPermitsList.length >0" ng-hide="pageCount() == 1">
+                        <div class="col-sm-12 col-md-12 col-lg-12">
+                            <div class="clearfix mar-15-7">
+                                <div class="pull-left">
+                                    <ul class="cus-pagination reset">
+                                        <li class="" ng-class="{current:currentPage == n}" ng-repeat="n in range()" ng-click="setPage(n)">{{n}}</li>
+                                    </ul>
+                                </div>
+                                <div class="pull-right">
+                                    <nav>
+                                        <ul class="cus-pagination-pager reset">
+                                            <li class="disabled" ng-if="currentPage == 1">
+                                                <button class="btn-disabled">
+                                                    <i class="fa fa-angle-double-left"></i> Previous</button>
+                                            </li>
+                                            <li class="" ng-if="currentPage > 1">
+                                                <button class="pri-cus-buttons" ng-click="prevPage()">
+                                                    <i class="fa fa-angle-double-left"></i> Previous</button>
+                                            </li>
+                                            <li class="disabled" ng-if="currentPage == pageCount()">
+                                                <button class="btn-disabled">Next <i class="fa fa-angle-double-right"></i></button>
+                                            </li>
+                                            <li class="" ng-if="currentPage < pageCount()">
+                                                <button class="pri-cus-buttons" ng-click="nextPage()">Next <i class="fa fa-angle-double-right"></i></button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Document uploaded list for Permit-26017.009</h4>
+                </div>
+                <div class="">
+                    <div class="row">
+                        <div class="col-sm-12 mar-5-0">
+                            <label class="pri-cus-buttons pull-left mar-0-5">
+                                <i class="fa fa-plus" aria-hidden="true"></i>
+                                <span>Add file</span>
+                                <input type="file" id="fileID" file-model="myFile" style="visibility: hidden;" ng-disabled="multipleFiles.length == 5">
+                            </label>
+                            <span class="mar-10">{{fileName}}</span>
+
+                            <button class="pri-cus-buttons pull-right mar-0-5" ng-click="uploadFile(currentPermitId)" ng-if="multipleFiles.length >0">Upload</button>
+                            <button class="pri-cus-buttons pull-right mar-0-5" ng-click="cancelFileUpload('deleteAll')" ng-if="multipleFiles.length >0">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!--<ul class="list-group" ng-if="multipleFiles.length > 0">-->
+                    <ul class="list-group">
+
+                        <li class="list-group-item" ng-if="multipleFiles.length > 0" ng-repeat="fileDetails in multipleFiles">
+                            <i class="fa fa-upload" aria-hidden="true"></i>
+                            <span class="mar-0-25">{{fileDetails.name}}</span>
+
+                            <span ng-switch="fileDetails.size > 1024*1024" class="mar-0-25">
+                                    <span  ng-switch-when="true">{{fileDetails.size / 1024 / 1024 | number:2}} MB</span>
+                            <span ng-switch-default>{{fileDetails.size / 1024 | number:2}} kB</span>
+                            </span>
+
+
+                            <i class="fa fa-times pull-right" aria-hidden="true" ng-click="cancelFileUpload($index)"></i>
+                        </li>
+                        <li class="list-group-item" ng-repeat="files in listOfFiles">
+                            <a ng-href="{{baseUrl}}/{{files.FileLocation}}" target="_blank">
+                                <i class="fa fa-download" aria-hidden="true"></i>
+                                <span>{{files.FileName}}</span>
+                            </a>
+                        </li>
+                        <li class="list-group-item" ng-if="listOfFiles == 0">
+                            <span>No files to download</span>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+
+</div>
+</div>
+</div>
+<style>
+    #permits_jq_demo tr.new input {
+        min-width: 100px;
+    }
+    
+    tr.new td.buttons {
+        min-width: 164px;
+    }
+    
+    #fileID {
+        display: inline-block !important;
+        width: 5px;
+    }
+    
+    .modal .list-group-item {
+        cursor: pointer;
+    }
+    /*********/
+    
+    .cus-scroll-container {
+        height: 60px;
+        overflow-x: scroll;
+        overflow-y: hidden;
+        background: #fff;
+        top: 55px;
+        z-index: 2;
+    }
+    
+    .scroll {
+        height: 18px;
+    }
+    
+    .tfixed {
+        position: fixed;
+    }
+</style>

@@ -1,0 +1,23 @@
+<div id="side-nav" class="" ng-controller="sideMenuCtrl" ng-cloak>    
+<div class="brand-logo">
+        <img src="./images/logo.png" alt="">
+        <a ng-click="" class="hidden-md hidden-lg"><i class="fa fa-bars" ng-click="hideViewSideBr()"></i></a>
+    </div>
+    <nav class="menu">
+        <ul class="nav reset" data-accordion>
+            <!--<li class="parent" ng-model="activeSideMenu+$index" ng-click="setActiveClass($index)" ng-repeat="menus in menuItems">-->
+            <li class="parent {{menus.isActiveClass}}" ng-repeat="menus in menuItems">
+                <a ng-href="#/{{menus.urlName}}" class="active">
+                    <i class="fa fa-tachometer"  ng-if="menus.MenuName == 'Dashboard'"></i>
+                    <i class="fa fa-pencil-square-o" ng-if="menus.MenuName == 'Permit Management'"></i>
+                    <i class="fa fa-lock" ng-if="menus.MenuName == 'Permit Permission'"></i>
+                    <i class="fa fa-users" ng-if="menus.MenuName == 'User Management'"></i>
+                    <i class="fa fa-user-secret" ng-if="menus.MenuName == 'Builder Management'"></i>
+                    <i class="fa fa-file-text" ng-if="menus.MenuName == 'Reports'"></i>
+                    <i class="fa fa-database" ng-if="menus.MenuName == 'Settings'"></i>
+                    <span class="menu-title">{{menus.MenuName}}</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>    

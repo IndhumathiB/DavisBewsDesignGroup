@@ -1,0 +1,214 @@
+<div class="main" ng-cloak>
+    <div ng-include="'views/sideMenu.html'"></div>
+    <!-- #side-nav End -->
+
+    <div id="main-content" ng-init="getPermissionFilters()">
+        <div class="header-wrapper">
+            <header class="clearfix">
+                <nav class="navbar navbar-fixed-top">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- Collect the nav links, forms, and other content for toggling -->
+                            <div class="col-xs-7 col-sm-10 col-md-9 col-lg-10" id="">
+                                <ul class="cus-breadcrumb visible-md-block visible-lg-block reset pull-left">
+                                    <li class="sidenav" ng-click="hideSidebar()">
+                                        <a href=""><i class="fa fa-bars" aria-hidden="true"></i></a>
+                                    </li>
+                                    <li class=""><a>Permit Permission</a></li>
+                                </ul>
+                                <ul class="hidden-md hidden-lg pull-left reset">
+                                    <li><a ng-click=""><i class="fa fa-bars" ng-click="sidebarMobileView()"></i></a></li>
+                                </ul>
+                            </div>
+                            <!-- /.navbar-collapse -->
+                            <div ng-include="'views/headerMenu.html'"></div>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+        </div>
+        <!-- .header-wrapper End -->
+
+        <div class="page-contents">
+            <div class="container-fluid">
+                <div class="list-view">
+                    <div class="row hidden-md hidden-lg mob-heads">
+                        <div class="col-xs-9 col-sm-8">
+                            <h3>Permit Permission</h3>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12 filter-container finline">
+                            <label ng-click="showFilter =! showFilter"><i class="fa" ng-class="{'fa-chevron-down': !showFilter, 'fa-chevron-up': showFilter}"></i> Filter</label>
+                            <div class="filter-fields form-inline" ng-show="showFilter">
+                                <div class="row mar-10-0">
+
+                                    <div class="col-sm-3 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label for="form_user">Builder <span class="required">*</span></label>
+                                            <select class="form-control" id="form_user" ng-model="permissionBuildId" ng-options="permissionBuilder.Id as (permissionBuilder.Value| uppercase) for permissionBuilder in permissionBuildersList" ng-change="changePermissionBulderId()">
+                                                <option value>-- Select --</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label for="form_user">Municipality</label>
+                                            <select class="form-control" id="form_user" ng-model="permissionMunicipId" ng-options="Municipality.Id as Municipality.Value for Municipality in MunicipalityList">
+                                                <option value>-- Select --</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label for="form_user">Community</label>
+                                            <select class="form-control" id="form_user" ng-model="permissionCommunityId" ng-options="community.Id as community.Value for community in CommunityList">
+                                                <option value>-- Select --</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 col-md-4 col-lg-3">
+                                        <div class="form-group">
+                                            <label for="form_user">User</label>
+                                            <select class="form-control" id="form_user" ng-options="permissionBasedUser.Id as permissionBasedUser.Value for permissionBasedUser in permissionBasedUserList" ng-model="permissionUserId" ng-disabled="!permissionBasedUserList">
+
+                                            </select>&nbsp;<i class="fa fa-spinner fa-spin" ng-show="startSpinner"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-12 col-md-12 text-center">
+                                        <button type="button" class="btn btn-default mar-10" ng-click="resetPermitsFilter()">Reset</button>
+                                        <button type="button" class="pri-cus-buttons mar-10" ng-click="applyPermissionFilter(0)">Apply</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12 col-md-4">
+                            <div class="form-group" ng-show="permissionBuildId">
+                                <label for="form_user">Select the users from the list to assign permission</label>
+                                <select class="form-control" id="form_user" ng-options="permissionBasedUser.Id as permissionBasedUser.Value for permissionBasedUser in permissionBasedUserList" ng-model="BuilderUserIds" multiple>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end of .filter-container -->
+
+                    <div class="row">
+                        <div class="col-sm-12 col-md-12 col-lg-12">
+                            <div class="table-responsive cus-cards">
+                                <table class="table table-striped custom-tag">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th colspan="2" class="text-center">Assign Permission</th>
+                                            <th colspan="2" class="text-center">Existing Users</th>
+                                            
+                                        </tr>
+                                        <tr>
+                                            <th>Permits</th>
+                                            <th>Read Only</th>
+                                            <th>Document Upload</th>
+                                            <th>Users with Read permission</th>
+                                            <th>Users with doc Upload permission</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="permitPermission in permitPermissionList">
+                                            <td ng-bind="permitPermission.JobNumber"></td>
+                                            <td>
+                                                <input type="checkbox" ng-model="permitPermission.CanRead" ng-change="watchReadPermissionChange($index)" ng-disabled="!BuilderUserIds">
+                                            </td>
+                                            <td>
+                                                <input type="checkbox" ng-model="permitPermission.CanUpload" ng-change="watchUploadPermissionChange($index)" ng-disabled="!BuilderUserIds">
+                                            </td>
+                                            <td>                                                
+                                                <button type="button" ng-class="{'pri-cus-buttons tag-active' : isRemoved,'btn-disabled tag-removed':!isRemoved}" ng-repeat=" BuilderUser in permitPermission.UsersWithReadPermission.BuilderUsers track by BuilderUser.Id" ng-init="isRemoved = true">{{BuilderUser.Value +removeReadUserMsg}}
+                                                    <i class="fa fa-times" aria-hidden="true" ng-click="removeUserFrmRead($parent.$index,$index);removeReadUserMsg =' will be remove';isRemoved = false" ng-hide="!isRemoved"></i></button>
+                                                <button type="button" ng-class="{'pri-cus-buttons tag-active' : isRemoved,'btn-disabled tag-removed':!isRemoved}" ng-repeat=" supervisorUser in permitPermission.UsersWithReadPermission.Supervisors" ng-init="isRemoved = true">{{supervisorUser.Value + removeReadSuperMsg}}
+                                                    <i class="fa fa-times" aria-hidden="true" ng-click="removeSuperFrmRead($parent.$index,$index);removeReadSuperMsg=' will be remove';isRemoved = false" ng-hide="!isRemoved"></i></button>
+                                            </td>
+                                            <td>
+                                                <button type="button" ng-class="{'pri-cus-buttons tag-active' : isRemoved,'btn-disabled tag-removed':!isRemoved}" ng-repeat=" BuilderUser in permitPermission.UsersWithDocUploadPermission.BuilderUsers" ng-init="isRemoved = true">{{BuilderUser.Value+removeDocUserMsg}}
+                                                    <i class="fa fa-times" aria-hidden="true" ng-click="removeUserFrmUpload($parent.$index,$index);removeDocUserMsg=' will be remove';isRemoved = false" ng-hide="!isRemoved"></i></button>
+                                                <button type="button" ng-class="{'pri-cus-buttons tag-active' : isRemoved,'btn-disabled tag-removed':!isRemoved}" ng-repeat=" supervisorUser in permitPermission.UsersWithDocUploadPermission.Supervisors" ng-init="isRemoved = true">{{supervisorUser.Value + removeDocSuperMsg}}
+                                                    <i class="fa fa-times" aria-hidden="true" ng-click="removeSuperFrmUpload($parent.$index,$index);removeDocSuperMsg=' will be remove';isRemoved = false" ng-hide="!isRemoved"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot ng-if="!permissionBuildId" ng-hide="permitPermissionList.length > 0">
+                                        <tr>
+                                            <td colspan="5">
+                                                <center>No activity is recorded, please choose filter option</center>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+
+                                    <tfoot ng-show="permitPermissionList.length == 0 && permissionBuildId">
+                                        <tr>
+                                            <td colspan="5">
+                                                <center>No activity is recorded, please choose filter option</center>
+                                            </td>
+
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end of content -->
+                    
+                    <!-- Save Buttons -->
+                    <div class="row" ng-if="permitPermissionList.length > 0" ng-show="enableSaveButton">
+                        <div class="col-sm-12 col-md-12 text-center mar-25">
+                            <button type="button" class="btn-disabled pad-7-15">Save Changes</button>
+                        </div>
+                    </div>
+                    
+                    <div class="row" ng-if="permitPermissionList.length > 0" ng-hide="enableSaveButton">
+                        <div class="col-sm-12 col-md-12 text-center mar-25">
+                            <button type="button" class="pri-cus-buttons pad-7-15" ng-click="saveUserPermission()">Save Changes</button>
+                        </div>
+                    </div>
+                    <!-- End -->
+                    <div class="row" ng-if="permitPermissionList.length >0" ng-hide="pageCount() == 1">
+                        <div class="col-sm-12 col-md-12 col-lg-12">
+                            <div class="clearfix">
+                                <div class="pull-left">
+                                    <ul class="cus-pagination reset">
+                                        <li class="" ng-class="{current:currentPage == n}" ng-repeat="n in range()" ng-click="setPage(n)">{{n}}</li>
+                                    </ul>
+                                </div>
+                                <div class="pull-right">
+                                    <nav>
+                                        <ul class="cus-pagination-pager reset">
+                                            <li class="disabled" ng-if="currentPage == 1">
+                                                <button class="btn-disabled" ng-disabled="true">
+                                                    <i class="fa fa-angle-double-left"></i> Previous</button>
+                                            </li>
+                                            <li class="" ng-if="currentPage > 1">
+                                                <button class="pri-cus-buttons" ng-click="prevPage()">
+                                                    <i class="fa fa-angle-double-left"></i> Previous</button>
+                                            </li>
+                                            <li class="disabled" ng-if="currentPage == pageCount()">
+                                                <button class="btn-disabled" ng-disabled="true">Next <i class="fa fa-angle-double-right"></i></button>
+                                            </li>
+                                            <li class="" ng-if="currentPage < pageCount()">
+                                                <button class="pri-cus-buttons" ng-click="nextPage()">Next <i class="fa fa-angle-double-right"></i></button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end of .pagination -->
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

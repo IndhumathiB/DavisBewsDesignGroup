@@ -1,0 +1,235 @@
+<div class="main" ng-cloak>
+    <div ng-include="'views/sideMenu.html'"></div>
+    <div id="main-content" ng-init="getAllBuilderManageMembers()">
+        <div class="header-wrapper">
+            <header class="clearfix">
+                <nav class="navbar navbar-fixed-top">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- Collect the nav links, forms, and other content for toggling -->
+                            <div class="col-xs-7 col-sm-10 col-md-9 col-lg-10" id="">
+                                <ul class="cus-breadcrumb visible-md-block visible-lg-block reset pull-left">
+                                    <li class="sidenav" ng-click="hideSidebar()">
+                                        <a href=""><i class="fa fa-bars" aria-hidden="true"></i></a>
+                                    </li>
+                                    <li class='' ng-class={link:hideListView} ng-click="hideListView = false"><a>Builder Management</a></li>
+                                    <li class="" ng-show="hideListView">{{createLabel}}</li>
+
+                                </ul>
+                                <ul class="hidden-md hidden-lg pull-left reset">
+                                    <li><a ng-click=""><i class="fa fa-bars" ng-click="sidebarMobileView()"></i></a></li>
+
+                                </ul>
+                                <button class="pri-cus-buttons pull-right visible-md-block visible-lg-block" ng-click="createNewBuilder()" ng-hide="hideListView"><i class="fa fa-plus"></i> Create New Builder</button>
+                            </div>
+                            <!-- /.navbar-collapse -->
+                            <div ng-include="'views/headerMenu.html'"></div>
+                        </div>
+                    </div>
+                    <!-- /.container-fluid -->
+                </nav>
+            </header>
+        </div>
+        <!-- .header-wrapper End -->
+
+        <div class="page-contents">
+            <div class="container-fluid">
+                <div class="list-view" ng-hide="hideListView">
+                    <div class="row hidden-md hidden-lg mob-heads">
+                        <div class="col-xs-9 col-sm-8">
+                            <h3>Builder Management</h3>
+                        </div>
+                        <div class="col-xs-3 col-sm-4 text-right">
+                            <button class="pri-cus-buttons" ng-click="createNewBuilder()"><i class="fa fa-plus"></i> Create New Builder</button>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-sm-12 col-md-12 col-lg-12">
+                            <div class="table-responsive cus-cards" >
+                                <table wt-responsive-table class="table table-striped responsive">
+                                    <thead>
+                                        <tr ng-init="sortReverse =true">
+                                            <th ng-click="sortBy('BuilderName');sortReverse = !sortReverse">Builder Name <i class="fa fa-sort"></i></th>
+                                            <th ng-click="sortBy('ContactName');sortReverse = !sortReverse">Contact Name <i class="fa fa-sort"></i></th>
+                                            <th>Phone</th>
+                                            <th>Email</th>
+                                            <th>&nbsp;</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody ng-repeat="buldersDatas in buildersList | orderBy:orderField |limitTo: itemsPerPage">
+                                        <tr>
+                                            <td>{{buldersDatas.BuilderName}}</td>
+                                            <td>{{buldersDatas.ContactName}}</td>
+                                            <td>{{buldersDatas.ContactPhone}}</td>
+                                            <td>{{buldersDatas.ContactEmail}}</td>
+                                            <td>
+                                                <i class="fa fa-pencil-square-o" data-toggle="tooltip" data-placement="top" title="Edit" ng-click="editBuilder(buldersDatas.Id,$index)" tooltip></i>
+                                                <i class="fa fa-trash-o" data-toggle="tooltip" data-placement="top" title="Delete" ng-click="deleteBuilder($index)" tooltip></i>
+                                                <!-- <i class="fa fa-ban" data-toggle="tooltip" data-placement="top" title="Deactivate" tooltip></i>-->                                               
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end of content -->
+
+                    <div class="row" ng-if="buildersList.length > 0" ng-hide="pageCount() == 1">
+                        <div class="col-sm-12 col-md-12 col-lg-12">
+                            <div class="clearfix mar-15-7">
+                                <div class="pull-left">
+                                    <ul class="cus-pagination reset">
+                                        <li class="" ng-class="{current:currentPage == n}" ng-repeat="n in range()" ng-click="setPage(n)">{{n}}</li>
+                                    </ul>
+                                </div>
+                                <div class="pull-right">
+                                    <nav>
+                                        <ul class="cus-pagination-pager reset">
+                                            <!--<li class="disabled" ng-class="">-->
+                                            <li class="disabled" ng-if="currentPage == 1">
+                                                <button class="btn-disabled">
+                                                    <i class="fa fa-angle-double-left"></i> Previous</button>
+                                            </li>
+                                            <li class="" ng-if="currentPage > 1">
+                                                <button class="pri-cus-buttons" ng-click="prevPage()">
+                                                    <i class="fa fa-angle-double-left"></i> Previous</button>
+                                            </li>
+                                            <li class="disabled" ng-if="currentPage == pageCount()">
+                                                <button class="btn-disabled">Next <i class="fa fa-angle-double-right"></i></button>
+                                            </li>
+                                            <li class="" ng-if="currentPage < pageCount()">
+                                                <button class="pri-cus-buttons" ng-click="nextPage()">Next <i class="fa fa-angle-double-right"></i></button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end of .pagination -->
+
+                </div>
+                <div class="row form-view" ng-show="hideListView">
+                    <div class="col-sm-12 col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6">
+                        <div class="cus-panels-with-pad mar-10-0">
+                            <form name="createBuilderForm" class="styles">
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-6">
+                                        <div class="form-group">
+                                            <label for="fname">Builder Name <span class="required">*</span></label>
+                                            <div class="control-group" ng-class=" {true: 'error'}[submitted && createBuilderForm.builderName.$invalid]">
+                                                <input type="text" class="form-control" id="builderName" name="builderName" ng-model="builderManagement.BuilderName" ng-pattern="/^[a-z0-9_&@ A-Z]{1,30}$/" ng-change="watchBuilderChange()" required>
+                                                <span class=required ng-show="submitted && createBuilderForm.builderName.$error.required">Builder Name is required </span>
+                                                <span class=required ng-show="createBuilderForm.builderName.$error.pattern">Builder Name is Invalid </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-6">
+                                        <div class="form-group">
+                                            <label for="lname">Contact Name <span class="required">*</span></label>
+                                            <div class="control-group" ng-class=" {true: 'error'}[submitted && createBuilderForm.builderConName.$invalid]">
+                                                <input type="text" class="form-control" id="builderConName" name="builderConName" ng-model="builderManagement.ContactName" ng-pattern="/^[a-z A-Z]{1,30}$/" ng-change="watchBuilderChange()" required>
+                                                <span class=required ng-show="submitted && createBuilderForm.builderConName.$error.required">Contact Name is required </span>
+                                                 <span class=required ng-show="createBuilderForm.builderConName.$error.pattern">Contact Name is Invalid </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-6">
+                                        <div class="form-group">
+                                            <label for="add">Address</label>
+                                            <div class="control-group" ng-class=" {true: 'error'}[submitted && createBuilderForm.builderAddress.$invalid]">
+                                            <input type="text" class="form-control" id="builderAddress" name="builderAddress" ng-model="builderManagement.Address1" ng-pattern="/^[a-z /,A-Z0-9]{1,50}$/" ng-change="watchBuilderChange()">
+                                            <span class=required ng-show="createBuilderForm.builderAddress.$error.pattern">Address is Invalid </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-6">
+                                        <div class="form-group">
+                                            <label for="city">City</label>
+                                             <div class="control-group" ng-class=" {true: 'error'}[submitted && createBuilderForm.builderCity.$invalid]">
+                                            <input type="text" class="form-control" id="builderCity" name="builderCity" ng-model="builderManagement.City" ng-pattern="/^[a-z A-Z]{1,30}$/" ng-change="watchBuilderChange()">
+                                             <span class=required ng-show="createBuilderForm.builderCity.$error.pattern">City is Invalid </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-6">
+                                        <div class="form-group">
+                                            <label for="state">State</label>
+                                            <div class="control-group" ng-class=" {true: 'error'}[submitted && createBuilderForm.builderState.$invalid]">
+                                            <input type="text" class="form-control" id="builderState" name="builderState" ng-model="builderManagement.State" ng-pattern="/^[a-z A-Z]{1,30}$/" ng-change="isDisabled=false">
+                                            <span class=required ng-show="createBuilderForm.builderState.$error.pattern">State is Invalid </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-6">
+                                        <div class="form-group">
+                                            <label for="zip">Zip</label>
+                                            <div class="control-group" ng-class=" {true: 'error'}[submitted && createBuilderForm.builderZip.$invalid]">
+                                            <input type="text" class="form-control" id="builderZip" name="builderZip" ng-model="builderManagement.Zipcode" ng-pattern="/^[-0-9]{1,15}$/" ng-change="watchBuilderChange()">
+                                             <span class=required ng-show="createBuilderForm.builderZip.$error.pattern">Zip is Invalid </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-6">
+                                        <div class="form-group">
+                                            <label for="phone">Phone</label>
+                                            <div class="control-group" ng-class=" {true: 'error'}[submitted && createBuilderForm.builderphno.$invalid]">
+                                                <input type="tel" class="form-control" id="builderPhno" name="builderphno" ng-model="builderManagement.ContactPhone" ng-pattern="/^[+0-9-]{0,15}$/" ng-change="watchBuilderChange()">
+                                                <span class=required ng-show="createBuilderForm.builderphno.$error.pattern">Phone Number is Invalid </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-6">
+                                        <div class="form-group">
+                                            <label for="email">Email <span class="required">*</span></label>
+                                            <div class="control-group" ng-class=" {true: 'error'}[submitted && createBuilderForm.builderemail.$invalid]">
+                                                <!--<input type="email" class="form-control" id="builderEmail" name="builderemail" ng-model="builderManagement.ContactEmail" ng-change="watchBuilderChange()" ng-pattern="/^([a-zA-Z0-9])+([a-zA-Z])+([\._a-z][a-zA-Z0-9]+)+([_a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/" required>-->
+                                                
+                                                <input type="email" class="form-control" id="builderEmail" name="builderemail" ng-model="builderManagement.ContactEmail" ng-change="watchBuilderChange()" ng-pattern="/^([a-zA-Z0-9])+[_a-z]([\._a-z0-9]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{1,})$/" required>
+                                                
+                                                <span class=required ng-show="submitted && createBuilderForm.builderemail.$error.required">Email is required </span>
+                                                <span class=required ng-show="createBuilderForm.builderemail.$error.pattern">Email is Invalid </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-12">
+                                        <div class="form-group">
+                                            <label for="notes">Notes</label>
+                                            <textarea class="form-control" id="builderNotes" rows="3" name="builderNotes" ng-model="builderManagement.Notes" ng-change="watchBuilderChange()"></textarea>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-12 clearfix" ng-show="enableSaveBtn">
+                                        <button type="button" class="btn-disabled pull-right">{{buttonName}}</button>
+                                        <button ng-click="cancelCreateNewBuilder()" type="button" class="btn btn-default pull-right">Cancel</button>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 clearfix" ng-hide="enableSaveBtn">
+                                        <button type="button" class="pri-cus-buttons pull-right" ng-click="saveBuilder(builderManagement.Id);enableSaveBtn=true">{{buttonName}}</button>
+                                        <button ng-click="cancelCreateNewBuilder()" type="button" class="btn btn-default pull-right">Cancel</button>
+                                    </div>
+                                </div>
+
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,67 @@
+<!-- Add your site or application content here -->
+    <div class="app-signin">
+        <div class="container" ng-init="checkRememberMe()">
+            <div class="signin-container row">
+                <div class="col-md-4 col-md-offset-4 top-bottom-moderate-box-shadows">
+                    <div class="brand text-center">
+                        <img src="./images/logo.png" width="98px" height="">
+                    </div>
+                    <p class="h4 text-center">Welcome to DBDG</p>
+                    <div class="login-form">
+                        <form>
+                            <div class="form-group">
+                                <label for="">User Name</label>
+                                <input type="text" class="form-control" ng-model="username" placeholder="Enter your email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="">Password</label>
+                                <input type="password" class="form-control" ng-model="password" placeholder="Enter Password" required>
+                            </div>
+                            <button class="pri-cus-buttons" ng-click="signIn()">Sign In</button>
+                            <div class="row f-sm">
+                                <div class="col-md-6">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" ng-model="rememberMe"> Remember me
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="checkbox text-right">
+                                        <a href="#/forgotpassword"> Forgot Password ? </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>       
+        </div>
+        
+<div class="alert-container top-right slideInRight" ng-if="showAlert">
+    <div class="cus-cards-with-pad content clearfix" >
+        <p>{{message}}</p>
+        <!--<p>{{message}} <a href="#">sample link</a></p>-->
+        <button type="button" class="">
+        <i class="fa fa-times" ng-click="showAlert=false"></i>
+        </button>
+    </div>
+</div>    
+        <!--<div class="sign-footer">
+            <footer class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p>&copy; Copyright Davis Bews Design Group</p>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <nav>
+                            <ul class="reset">
+                                <li class="display-ib"><a href="">Privacy &amp; Terms </a></li>
+                                <li class="display-ib"><a href="">Help</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </footer>
+        </div>-->
+    </div>

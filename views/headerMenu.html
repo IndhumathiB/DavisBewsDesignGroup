@@ -1,0 +1,27 @@
+<div class="col-xs-5 col-sm-2 col-md-3 col-lg-2 text-right" id="">
+    <ul class="nav navbar-right">
+        <li class="dropdown">
+            <a href="javascript:void(0)" class="dropdown-toggle text-right ellipsis" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                <i class="fa fa-user"></i>
+                <span class="hidden-sm hidden-xs">{{roleName}}</span>
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a href="#/myaccount">My Account</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#/" ng-click="logout()">Logout</a></li>
+            </ul>
+        </li>
+
+    </ul>
+</div>
+
+<div class="alert-container top-right slideInRight" ng-if="showAlert">
+    <div class="cus-cards-with-pad content clearfix">
+        <p>{{message}}</p>
+        <!--<p>{{message}} <a href="#">sample link</a></p>-->
+        <button type="button" class="">
+        <i class="fa fa-times" ng-click="closeNotificationAlert()"></i>
+        </button>
+    </div>
+</div>
